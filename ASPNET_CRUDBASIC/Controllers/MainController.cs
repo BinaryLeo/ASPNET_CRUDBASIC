@@ -6,26 +6,28 @@ namespace ASPNET_CRUDBASIC.Controllers
     public class MainController : Controller
 
     {
-        readonly ContactData _contactData = new ContactData();
+        readonly ContactData _contactData = new();
         public IActionResult List()
         {
-            //Contact List View
             var contactList = _contactData.ListUsers();
             return View(contactList);
         }
         public IActionResult SaveView()
         {
-            // Save View
             return View();
         }
+      
         [HttpPost]
         public IActionResult SaveView(ContactModel selectedUser)
         {
+            if (!ModelState.IsValid)
+                return View();
+            
+            var (StatusResult, ErrorMessage) = _contactData.SaveUser(selectedUser);
+            bool statusResponse = StatusResult;
+            string errorMessage = ErrorMessage;
             try
             {
-                var result = _contactData.SaveUser(selectedUser);
-                bool statusResponse = result.StatusResult;
-                string errorMessage = result.ErrorMessage;
 
                 if (statusResponse)
                 {
@@ -33,17 +35,46 @@ namespace ASPNET_CRUDBASIC.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "An error occurred while saving the user. Error: " + errorMessage;
+                    TempData["ErrorMessage"] = "Error: " + errorMessage;
                     return View();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                TempData["ErrorMessage"] = "Error: " + ex.Message;
+                TempData["ErrorMessage"] = "Error: " + errorMessage;
                 return View();
             }
         }
-
+        public IActionResult Edit(int UserId)
+        {
+            var selectedUser = _contactData.GetUserById(UserId);
+            return View(selectedUser);
+        }
+        [HttpPost]
+        public IActionResult Edit(ContactModel selectedUser)
+        {
+            if (!ModelState.IsValid)
+                return View();
+            var StatusResult = _contactData.UpdateUser(selectedUser);
+            if(StatusResult)
+                return RedirectToAction("List");
+            else
+             return View();
+        }
+        public IActionResult DeleteView(int UserId)
+        {
+            var selectedUser = _contactData.GetUserById(UserId);
+            return View(selectedUser);
+        }
+        [HttpPost]
+        public IActionResult DeleteView(ContactModel selectedUser)
+        {
+            var StatusResult = _contactData.DeleteUser(selectedUser.UserId);
+            if (StatusResult)
+                return RedirectToAction("List");
+            else
+                return View();
+        }
     }
 
 }

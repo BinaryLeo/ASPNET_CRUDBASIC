@@ -1,0 +1,27 @@
+﻿@model ContactModel
+@{
+    ViewData["Title"] = "DeleteView";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="card-header" asp-for="UserId">
+        Delete Contact - ID @Model.UserId
+    </div>
+    <div class="card-body">
+
+        <form asp-action="DeleteView" asp-controller="Main" method="post">
+
+            <div class="mb-3">
+                <label asp-for="UserName" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="UserName" aria-describedby="username" value="@Model.UserName" /> <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+           <div class="alert alert-danger"  role="alert">
+               Do you really want to delete the contact  @Html.DisplayTextFor(m => m.UserName) ?
+           </div>
+            <input type="hidden" asp-for="UserId" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="List" asp-controller="Main" class="btn btn-success">Contact List</a>
+        </form>
+    </div>
+</div>

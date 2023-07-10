@@ -12,8 +12,10 @@ namespace ASPNET_CRUDBASIC.Data
             using (var connection = new SqlConnection(cn.GetSqlconnection()))
             {
                 connection.Open();
-                SqlCommand cmd = new SqlCommand("sp_List", connection);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new("sp_List", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
                 using var dr = cmd.ExecuteReader();
                 
                     while (dr.Read())
@@ -25,7 +27,7 @@ namespace ASPNET_CRUDBASIC.Data
             return UsersList;
 
          }
-        private ContactModel CreateContactModelFromDataReader(SqlDataReader dr)
+        private static ContactModel CreateContactModelFromDataReader(SqlDataReader dr)
         {
             return new ContactModel()
             {
@@ -42,7 +44,7 @@ namespace ASPNET_CRUDBASIC.Data
             using (var connection = new SqlConnection(cn.GetSqlconnection()))
             {
                 connection.Open();
-                SqlCommand cmd = new SqlCommand("sp_getUser", connection);
+                SqlCommand cmd = new ("sp_getUser", connection);
                 //Use the stored Procedure responsible of Select an user by id
                 cmd.Parameters.AddWithValue("UserId",UserId);
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -58,13 +60,15 @@ namespace ASPNET_CRUDBASIC.Data
             return SelectedUserById;
         }
 
-        private ContactModel CreateModelForSlectedUserByIdFromDataReader(SqlDataReader dr)
+        private static ContactModel CreateModelForSlectedUserByIdFromDataReader(SqlDataReader dr)
         {
-            var user = new ContactModel();
-            user.UserId = Convert.ToInt32(dr["UserId"]);
-            user.UserName = dr["UserName"].ToString();
-            user.UserPhone = dr["UserPhone"].ToString();
-            user.UserEmail = dr["UserEmail"].ToString();
+            var user = new ContactModel
+            {
+                UserId = Convert.ToInt32(dr["UserId"]),
+                UserName = dr["UserName"].ToString(),
+                UserPhone = dr["UserPhone"].ToString(),
+                UserEmail = dr["UserEmail"].ToString()
+            };
             return user;
         }
         public (bool StatusResult, string ErrorMessage) SaveUser(ContactModel selectedUser)
@@ -74,48 +78,42 @@ namespace ASPNET_CRUDBASIC.Data
             try
             {
                 var cn = new Connection();
-                using (var connection = new SqlConnection(cn.GetSqlconnection()))
+                using var connection = new SqlConnection(cn.GetSqlconnection());
+                connection.Open();
+
+                // Check if the user already exists
+                SqlCommand checkCmd = new("sp_CheckUserExistence", connection);
+                checkCmd.Parameters.AddWithValue("@UserEmail", selectedUser.UserEmail);
+                checkCmd.CommandType = CommandType.StoredProcedure;
+                int existingUserCount = (int)checkCmd.ExecuteScalar();
+
+                if (existingUserCount > 0)
                 {
-                    connection.Open();
+                    // User already exists, handle accordingly
+                    StatusResult = false;
+                    ErrorMessage = "User already exists in the database.";
+                }
+                else
+                {
+                    // User does not exist, proceed with saving
+                    SqlCommand cmd = new ("sp_insertUser", connection);
+                    // Use the stored procedure responsible for inserting a new user
+                    cmd.Parameters.AddWithValue("UserName", selectedUser.UserName);
+                    cmd.Parameters.AddWithValue("UserEmail", selectedUser.UserEmail);
+                    cmd.Parameters.AddWithValue("UserPhone", selectedUser.UserPhone);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.ExecuteNonQuery();
 
-                    // Check if the user already exists
-                    SqlCommand checkCmd = new SqlCommand("sp_CheckUserExistence", connection);
-                    checkCmd.Parameters.AddWithValue("@UserEmail", selectedUser.UserEmail);
-                    checkCmd.CommandType = CommandType.StoredProcedure;
-                    int existingUserCount = (int)checkCmd.ExecuteScalar();
-
-                    if (existingUserCount > 0)
-                    {
-                        // User already exists, handle accordingly
-                        StatusResult = false;
-                        ErrorMessage = "User already exists in the database.";
-                    }
-                    else
-                    {
-                        // User does not exist, proceed with saving
-                        SqlCommand cmd = new SqlCommand("sp_insertUser", connection);
-                        // Use the stored procedure responsible for inserting a new user
-                        cmd.Parameters.AddWithValue("UserName", selectedUser.UserName);
-                        cmd.Parameters.AddWithValue("UserEmail", selectedUser.UserEmail);
-                        cmd.Parameters.AddWithValue("UserPhone", selectedUser.UserPhone);
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.ExecuteNonQuery();
-
-                        StatusResult = true;
-                    }
+                    StatusResult = true;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                ErrorMessage = e.Message;
+                ErrorMessage = "Failed to save data. An internal error has occurred. Please contact the support ";
                 StatusResult = false;
             }
-
             return (StatusResult, ErrorMessage);
         }
-
-
-
         public bool UpdateUser(ContactModel selectedUser)
         {
             bool StatusResult;
@@ -125,7 +123,7 @@ namespace ASPNET_CRUDBASIC.Data
                 using (var connection = new SqlConnection(cn.GetSqlconnection()))
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand("sp_updateUser", connection);
+                    SqlCommand cmd = new("sp_updateUser", connection);
                     //Use the stored Procedure responsible of update a user
                     cmd.Parameters.AddWithValue("UserId", selectedUser.UserId);
                     cmd.Parameters.AddWithValue("UserName", selectedUser.UserName);
@@ -154,7 +152,7 @@ namespace ASPNET_CRUDBASIC.Data
                 using (var connection = new SqlConnection(cn.GetSqlconnection()))
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand("sp_deleteUser", connection);
+                    SqlCommand cmd = new("sp_deleteUser", connection);
                     //Use the stored Procedure responsible of delete a user
                     cmd.Parameters.AddWithValue("UserId", UserId);
                     cmd.CommandType = CommandType.StoredProcedure;
