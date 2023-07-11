@@ -108,3 +108,8 @@ exec sp_CheckUserExistence
 @UserEmail= "jeremy@mail.com"
 
 ```
+![Screenshot 2023-07-11 114716](https://github.com/BinaryLeo/ASPNET_CRUDBASIC/assets/72607039/9da02d96-ee96-4013-8cd0-8fa2e4c0f4e2)
+![Screenshot 2023-07-11 114757](https://github.com/BinaryLeo/ASPNET_CRUDBASIC/assets/72607039/5e8d456f-2fb2-44bb-a260-1c837db8e206)
+
+![![Screenshot 2023-07-11 114952](https://github.com/BinaryLeo/ASPNET_CRUDBASIC/assets/72607039/de039cde-6344-4f99-b433-048e055c2f11)
+Screenshot 2023-07-11 114838](https://github.com/BinaryLeo/ASPNET_CRUDBASIC/assets/72607039/0b7b6d22-1494-4c55-87bf-6732bc99280e)
